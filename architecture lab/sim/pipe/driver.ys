@@ -1,0 +1,257 @@
+#######################################################################
+# Test for copying block of size 5;
+#######################################################################
+	.pos 0
+main:	irmovq Stack, %rsp  	# Set up stack pointer
+
+	# Set up arguments for copy function and then invoke it
+	irmovq $5, %rdx		# src and dst have 5 elements
+	irmovq dest, %rsi	# dst array
+	irmovq src, %rdi	# src array
+	call ncopy		 
+	call check	        # Call checker code
+	halt                    # should halt with 0xaaaa in %rax
+StartFun:
+#/* $begin ncopy-ys */
+##################################################################
+# ncopy.ys - Copy a src block of len words to dst.
+# Return the number of positive words (>0) contained in src.
+#
+# author: asciibase64
+#
+# Describe how and why you modified the baseline code.
+#
+##################################################################
+# Do not modify this portion
+# Function prologue.
+# %rdi = src, %rsi = dst, %rdx = len
+ncopy:
+
+##################################################################
+# You can modify this portion
+	# Loop header
+	xorq %rax,%rax		# count = 0;
+	irmovq $5, %rcx		# min = 5;
+	jmp Check
+
+Loop:	
+	mrmovq (%rdi), %r10	# read val from src...
+	mrmovq 8(%rdi), %r11 #read val from src for Loop2
+	rmmovq %r10, (%rsi)	# ...and store it to dst
+	andq %r10, %r10		# val <= 0?
+	jle Loop2			# if so, goto Loop2:
+	iaddq $1, %rax		# count++
+Loop2:
+	mrmovq 16(%rdi), %r10	# read val from src for Loop3
+	rmmovq %r11, 8(%rsi)	# use the val from Loop and store it to dst
+	andq %r11, %r11		# val <= 0?
+	jle Loop3			# if so, goto Loop3:
+	iaddq $1, %rax		# count++
+Loop3:
+	mrmovq 24(%rdi), %r11	# read val from src...
+	rmmovq %r10, 16(%rsi)	# ...and store it to dst
+	andq %r10, %r10		# val <= 0?
+	jle Loop4			# if so, goto Loop4:
+	iaddq $1, %rax		# count++
+Loop4:
+	mrmovq 32(%rdi), %r10	# read val from src...
+	rmmovq %r11, 24(%rsi)	# ...and store it to dst
+	andq %r11, %r11		# val <= 0?
+	jle Loop5			# if so, goto Loop5:
+	iaddq $1, %rax		# count++
+Loop5:
+	rmmovq %r10, 32(%rsi)	# ...and store it to dst
+	andq %r10, %r10		# val <= 0?
+	jle Npos			# if so, goto Npos:
+	iaddq $1, %rax		# count++
+Npos:	
+	iaddq $40, %rdi		# src++
+	iaddq $40, %rsi		# dst++
+Check:
+	subq %rcx,%rdx		# len > min (len -= min at the same time)?
+	jg Loop			    # if so, goto Loop:
+
+BeforeLastCheck:
+	addq %rcx, %rdx	# Because our Check do len -= min at the same time, we have to add min back
+
+FirstLastCheck:
+	andq %rdx, %rdx
+	jle Done
+
+LastLoop:
+	mrmovq (%rdi), %r10	# read val from src...
+	iaddq $-1, %rdx		# len--
+	rmmovq %r10, (%rsi)	# ...and store it to dst
+	andq %r10, %r10		# val <= 0?
+	jle LastCheck		# if so, goto LastCheck:
+	iaddq $1, %rax		# count++
+LastCheck:
+	iaddq $8, %rdi		# src++
+	iaddq $8, %rsi		# dst++
+	andq %rdx, %rdx
+	jle Done
+LastLoop2:
+	mrmovq (%rdi), %r10	# read val from src...
+	iaddq $-1, %rdx		# len--
+	rmmovq %r10, (%rsi)	# ...and store it to dst
+	andq %r10, %r10		# val <= 0?
+	jle LastCheck2		# if so, goto LastCheck2:
+	iaddq $1, %rax		# count++
+LastCheck2:
+	iaddq $8, %rdi		# src++
+	iaddq $8, %rsi		# dst++
+	andq %rdx, %rdx
+	jle Done
+LastLoop3:
+	mrmovq (%rdi), %r10	# read val from src...
+	iaddq $-1, %rdx		# len--
+	rmmovq %r10, (%rsi)	# ...and store it to dst
+	andq %r10, %r10		# val <= 0?
+	jle LastCheck3		# if so, goto LastCheck3:
+	iaddq $1, %rax		# count++
+LastCheck3:
+	iaddq $8, %rdi		# src++
+	iaddq $8, %rsi		# dst++
+	andq %rdx, %rdx
+	jle Done
+LastLoop4:
+	mrmovq (%rdi), %r10	# read val from src...
+	iaddq $-1, %rdx		# len--
+	rmmovq %r10, (%rsi)	# ...and store it to dst
+	andq %r10, %r10		# val <= 0?
+	jle LastCheck4		# if so, goto LastCheck4:
+	iaddq $1, %rax		# count++
+LastCheck4:
+	iaddq $8, %rdi		# src++
+	iaddq $8, %rsi		# dst++
+	jmp Done
+
+##################################################################
+# Do not modify the following section of code
+# Function epilogue.
+Done:
+	ret
+##################################################################
+# Keep the following label at the end of your function
+End:
+#/* $end ncopy-ys */
+EndFun:
+#################################################################### 
+# Epilogue code for the correctness testing driver
+####################################################################
+
+# This is the correctness checking code.
+# It checks:
+#   1. %rax has 3.  Set %rax to 0xbbbb if not.
+#   2. The total length of the code is less than or equal to 1000.
+#      Set %rax to 0xcccc if not.
+#   3. The source data was copied to the destination.
+#      Set %rax to 0xdddd if not.
+#   4. The words just before and just after the destination region
+#      were not corrupted.  Set %rax to 0xeeee if not.
+# If all checks pass, then sets %rax to 0xaaaa
+check:
+	# Return value test
+	irmovq $3,%r10
+	subq %r10,%rax
+	je checkb
+	irmovq $0xbbbb,%rax  # Failed test #1
+	jmp cdone
+checkb:
+	# Code length check
+	irmovq EndFun,%rax
+	irmovq StartFun,%rdx
+	subq %rdx,%rax
+	irmovq $1000,%rdx
+	subq %rax,%rdx
+	jge checkm
+	irmovq $0xcccc,%rax  # Failed test #2
+	jmp cdone
+checkm:
+	irmovq dest, %rdx # Pointer to next destination location
+	irmovq src,%rbx   # Pointer to next source location
+	irmovq $5,%rdi  # Count
+	andq %rdi,%rdi
+	je checkpre         # Skip check if count = 0
+mcloop:
+	mrmovq (%rdx),%rax
+	mrmovq (%rbx),%rsi
+	subq %rsi,%rax
+	je  mok
+	irmovq $0xdddd,%rax # Failed test #3
+	jmp cdone
+mok:
+	irmovq $8,%rax
+	addq %rax,%rdx	  # dest ++
+	addq %rax,%rbx    # src++
+	irmovq $1,%rax
+	subq %rax,%rdi    # cnt--
+	jg mcloop
+checkpre:
+	# Check for corruption
+	irmovq Predest,%rdx
+	mrmovq (%rdx), %rax  # Get word before destination
+	irmovq $0xbcdefa, %rdx
+	subq %rdx,%rax
+	je checkpost
+	irmovq $0xeeee,%rax  # Failed test #4
+	jmp cdone
+checkpost:
+	# Check for corruption
+	irmovq Postdest,%rdx
+	mrmovq (%rdx), %rax  # Get word after destination
+	irmovq $0xdefabc, %rdx
+	subq %rdx,%rax
+	je checkok
+	irmovq $0xeeee,%rax # Failed test #4
+	jmp cdone
+checkok:
+	# Successful checks
+	irmovq $0xaaaa,%rax
+cdone:
+	ret
+
+###############################
+# Source and destination blocks 
+###############################
+	.align 8
+src:
+	.quad 1
+	.quad 2
+	.quad 3
+	.quad -4
+	.quad -5
+	.quad 0xbcdefa # This shouldn't get moved
+
+	.align 16
+Predest:
+	.quad 0xbcdefa
+dest:
+	.quad 0xcdefab
+	.quad 0xcdefab
+	.quad 0xcdefab
+	.quad 0xcdefab
+	.quad 0xcdefab
+Postdest:
+	.quad 0xdefabc
+
+.align 8
+# Run time stack
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+
+Stack:

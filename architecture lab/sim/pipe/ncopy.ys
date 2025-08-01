@@ -1,0 +1,124 @@
+#/* $begin ncopy-ys */
+##################################################################
+# ncopy.ys - Copy a src block of len words to dst.
+# Return the number of positive words (>0) contained in src.
+#
+# author: asciibase64
+#
+# Describe how and why you modified the baseline code.
+#
+##################################################################
+# Do not modify this portion
+# Function prologue.
+# %rdi = src, %rsi = dst, %rdx = len
+ncopy:
+
+##################################################################
+# You can modify this portion
+	# Loop header
+	xorq %rax,%rax		# count = 0;
+	irmovq $5, %rcx		# min = 5;
+	jmp Check
+
+Loop:	
+	mrmovq (%rdi), %r10	# read val from src...
+	mrmovq 8(%rdi), %r11 #read val from src for Loop2
+	rmmovq %r10, (%rsi)	# ...and store it to dst
+	andq %r10, %r10		# val <= 0?
+	jle Loop2			# if so, goto Loop2:
+	iaddq $1, %rax		# count++
+Loop2:
+	mrmovq 16(%rdi), %r10	# read val from src for Loop3
+	rmmovq %r11, 8(%rsi)	# use the val from Loop and store it to dst
+	andq %r11, %r11		# val <= 0?
+	jle Loop3			# if so, goto Loop3:
+	iaddq $1, %rax		# count++
+Loop3:
+	mrmovq 24(%rdi), %r11	# read val from src...
+	rmmovq %r10, 16(%rsi)	# ...and store it to dst
+	andq %r10, %r10		# val <= 0?
+	jle Loop4			# if so, goto Loop4:
+	iaddq $1, %rax		# count++
+Loop4:
+	mrmovq 32(%rdi), %r10	# read val from src...
+	rmmovq %r11, 24(%rsi)	# ...and store it to dst
+	andq %r11, %r11		# val <= 0?
+	jle Loop5			# if so, goto Loop5:
+	iaddq $1, %rax		# count++
+Loop5:
+	rmmovq %r10, 32(%rsi)	# ...and store it to dst
+	andq %r10, %r10		# val <= 0?
+	jle Npos			# if so, goto Npos:
+	iaddq $1, %rax		# count++
+Npos:	
+	iaddq $40, %rdi		# src++
+	iaddq $40, %rsi		# dst++
+Check:
+	subq %rcx,%rdx		# len > min (len -= min at the same time)?
+	jge Loop			    # if so, goto Loop:
+
+BeforeLastCheck:
+	addq %rcx, %rdx	# Because our Check do len -= min at the same time, we have to add 5 back
+	jmp FirstLastCheck
+
+LastLoop:
+	mrmovq (%rdi), %r10	# read val from src...
+	iaddq $-1, %rdx		# len--
+	rmmovq %r10, (%rsi)	# ...and store it to dst
+	andq %r10, %r10		# val <= 0?
+	jle LastCheck		# if so, goto LastCheck:
+	iaddq $1, %rax		# count++
+LastCheck:
+	iaddq $8, %rdi		# src++
+	iaddq $8, %rsi		# dst++
+	andq %rdx, %rdx
+	jle Done
+LastLoop2:
+	mrmovq (%rdi), %r10	# read val from src...
+	iaddq $-1, %rdx		# len--
+	rmmovq %r10, (%rsi)	# ...and store it to dst
+	andq %r10, %r10		# val <= 0?
+	jle LastCheck2		# if so, goto LastCheck2:
+	iaddq $1, %rax		# count++
+LastCheck2:
+	iaddq $8, %rdi		# src++
+	iaddq $8, %rsi		# dst++
+	andq %rdx, %rdx
+	jle Done
+LastLoop3:
+	mrmovq (%rdi), %r10	# read val from src...
+	iaddq $-1, %rdx		# len--
+	rmmovq %r10, (%rsi)	# ...and store it to dst
+	andq %r10, %r10		# val <= 0?
+	jle LastCheck3		# if so, goto LastCheck3:
+	iaddq $1, %rax		# count++
+LastCheck3:
+	iaddq $8, %rdi		# src++
+	iaddq $8, %rsi		# dst++
+	andq %rdx, %rdx
+	jle Done
+LastLoop4:
+	mrmovq (%rdi), %r10	# read val from src...
+	iaddq $-1, %rdx		# len--
+	rmmovq %r10, (%rsi)	# ...and store it to dst
+	andq %r10, %r10		# val <= 0?
+	jle LastCheck4		# if so, goto LastCheck4:
+	iaddq $1, %rax		# count++
+LastCheck4:
+	iaddq $8, %rdi		# src++
+	iaddq $8, %rsi		# dst++
+	jmp Done
+
+FirstLastCheck:
+	andq %rdx, %rdx
+	jg LastLoop
+
+##################################################################
+# Do not modify the following section of code
+# Function epilogue.
+Done:
+	ret
+##################################################################
+# Keep the following label at the end of your function
+End:
+#/* $end ncopy-ys */

