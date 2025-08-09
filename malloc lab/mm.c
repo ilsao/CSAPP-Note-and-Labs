@@ -34,22 +34,12 @@ team_t team = {
     "ilsao@outlook.com(actually both are me)"
 };
 
-/* single word (4) or double word (8) alignment */
-#define ALIGNMENT 8
-
 /* basic constants */
 #define WSIZE 4
 #define DSIZE 8
 #define CLASS_SIZE 32
 
-/* rounds up to the nearest multiple of ALIGNMENT */
-#define ALIGN(size) (((size) + (ALIGNMENT-1)) & ~0x7)
-
-/* extend heap by this amout */
-#define SIZE_T_SIZE (ALIGN(sizeof(size_t)))
-
 #define MAX(x, y)           ((x) > (y) ? (x) : (y))
-#define MIN(x, y)           ((x) > (y) ? (y) : (x))
 
 /* pack a size and allocated bit into a word */
 #define PACK(size, alloc)   ((size) | (alloc))
