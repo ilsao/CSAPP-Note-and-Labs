@@ -14,5 +14,5 @@ If you are intersted in reading my write-up of the lab, please visit my personal
 - [x] Architecture Lab
 - [x] Cache Lab
 - [x] Shell Lab
-- [ ] Malloc Lab
+- [x] Malloc Lab
 - [ ] Proxy Lab
