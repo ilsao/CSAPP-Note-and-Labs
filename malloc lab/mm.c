@@ -420,32 +420,6 @@ void *mm_realloc(void *ptr, size_t size)
             PUT(FTRP(newptr), PACK(prev_size, 1));
         }
     }
-    /*
-    //  coalesce if prev block is free 
-    else if (!prev_alloc && next_alloc && prev_size + GETSIZE(FTRP(PREV_BLKP(newptr))) >= asize) {
-        remove_list(PREV_BLKP(newptr));
-
-        size_t copy_size = prev_size - 2 * DSIZE;
-        
-        prev_size += GETSIZE(FTRP(PREV_BLKP(newptr)));
-        newptr -= GETSIZE(FTRP(PREV_BLKP(newptr)));
-        memcpy(newptr, ptr, copy_size);
-
-        if (prev_size - asize >= 2 * DSIZE) {
-            PUT(HDRP(newptr), PACK(asize, 1));
-            PUT(FTRP(newptr), PACK(asize, 1));
-            PUT(HDRP(NEXT_BLKP(newptr)), PACK(prev_size - asize, 0));
-            PUT(FTRP(NEXT_BLKP(newptr)), PACK(prev_size - asize, 0));
-    
-            insert_list(NEXT_BLKP(newptr));
-        }
-        //  use entire block 
-        else {
-            PUT(HDRP(newptr), PACK(prev_size, 1));
-            PUT(FTRP(newptr), PACK(prev_size, 1));
-        }
-    }
-    */
     else {
         /* resize by finding another free block */
         if ((newptr = mm_malloc(asize)) == NULL)
